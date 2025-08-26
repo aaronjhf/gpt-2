@@ -262,7 +262,7 @@ logfile = None
 if master_process:
     run_id = uuid.uuid4()
     os.makedirs("logs", exist_ok=True)
-    logfile = f"logs/run_50k_steps.txt"
+    logfile = f"logs/run_20k_steps_linear.txt"
     print(logfile)
 def print0(s, console=False):
     if master_process:
