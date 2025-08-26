@@ -27,7 +27,8 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 torch.empty(1, device="cuda", requires_grad=True).backward() # prevents a bug on some systems
 from torch import Tensor, nn
 
-
+#putting in linearized regime 
+gamma = 1e-3
 
 
 #------------------GPT-2 Model--------------------------------
@@ -125,6 +126,7 @@ class GPT(nn.Module):
             x = block(x)
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x)
+        logits  /= gamma
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
@@ -297,7 +299,7 @@ for param in model.parameters():
 #optimizer, fixed learning rate to start
 
 
-optimizer = optim.AdamW(model.parameters(), lr=3e-4) 
+optimizer = optim.AdamW(model.parameters(), lr=3e-4*gamma) 
 
 """
 def get_lr(step: int):
@@ -315,6 +317,10 @@ model: nn.Module = torch.compile(model, dynamic=False)
 ########################################
 #            Warmup kernels            #
 ########################################
+
+
+
+
 
 # Warmup the training kernels, then re-initialize the state so we aren't cheating
 warmup_steps = 10
